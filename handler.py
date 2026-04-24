@@ -6,7 +6,7 @@ from PIL import Image
 from fashn_vton import TryOnPipeline
 
 # Load model at cold start
-pipeline = TryOnPipeline(weights_dir="./weights")
+pipeline = TryOnPipeline(weights_dir="/app/weights")
 
 def download_image(url):
     """Download image from URL and return PIL Image."""
