@@ -9,13 +9,15 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Install fashn-vton package from GitHub
-RUN pip3 install --no-cache-dir \
-    git+https://github.com/fashn-AI/fashn-vton-1.5.git \
-    runpod requests
+# Clone and install fashn-vton
+RUN git clone https://github.com/fashn-AI/fashn-vton-1.5.git /app/fashn-vton && \
+    pip3 install --no-cache-dir -e /app/fashn-vton
+
+# Install runpod and requests
+RUN pip3 install --no-cache-dir runpod requests
 
 # Download model weights
-RUN python3 -c "from fashn_vton.scripts.download_weights import download_weights; download_weights('./weights')"
+RUN python3 /app/fashn-vton/scripts/download_weights.py --weights-dir /app/weights
 
 COPY handler.py /app/handler.py
 
