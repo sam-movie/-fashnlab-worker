@@ -15,8 +15,8 @@ RUN git clone https://github.com/fashn-AI/fashn-vton-1.5.git /app/fashn-vton
 # Install fashn-vton package
 RUN pip3 install --no-cache-dir /app/fashn-vton
 
-# Install runpod and requests
-RUN pip3 install --no-cache-dir runpod requests
+# Install additional dependencies
+RUN pip3 install --no-cache-dir runpod requests huggingface_hub
 
 # Download model weights
 RUN python3 /app/fashn-vton/scripts/download_weights.py --weights-dir /app/weights
