@@ -9,15 +9,13 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+# Install fashn-vton package from GitHub
 RUN pip3 install --no-cache-dir \
-    torch torchvision --index-url https://download.pytorch.org/whl/cu121
+    git+https://github.com/fashn-AI/fashn-vton-1.5.git \
+    runpod requests
 
-RUN pip3 install --no-cache-dir \
-    diffusers transformers accelerate safetensors \
-    runpod requests Pillow
-
-# Download model at build time (baked into image)
-RUN python3 -c "from diffusers import AutoPipelineForInpainting; AutoPipelineForInpainting.from_pretrained('fashn-ai/fashn-vton-v1.5')"
+# Download model weights
+RUN python3 -c "from fashn_vton.scripts.download_weights import download_weights; download_weights('./weights')"
 
 COPY handler.py /app/handler.py
 
