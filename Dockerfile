@@ -13,7 +13,7 @@ WORKDIR /app
 RUN git clone https://github.com/fashn-AI/fashn-vton-1.5.git /app/fashn-vton
 
 # Install fashn-vton package
-RUN pip3 install --no-cache-dir -e /app/fashn-vton
+RUN pip3 install --no-cache-dir /app/fashn-vton
 
 # Install runpod and requests
 RUN pip3 install --no-cache-dir runpod requests
