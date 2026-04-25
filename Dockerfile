@@ -2,6 +2,7 @@ FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
+ENV HF_HOME=/app/hf_cache
 
 RUN apt-get update && apt-get install -y \
     python3 python3-pip git \
@@ -10,18 +11,18 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Clone fashn-vton repo
 RUN git clone https://github.com/fashn-AI/fashn-vton-1.5.git /app/fashn-vton
 
-# Install fashn-vton package
-RUN pip3 install --no-cache-dir /app/fashn-vton
+WORKDIR /app/fashn-vton
+RUN pip3 install --no-cache-dir -e .
 
-# Install additional dependencies
-RUN pip3 install --no-cache-dir runpod requests huggingface_hub fashn-human-parser
+RUN pip3 install --no-cache-dir runpod requests huggingface_hub
 
-# Download model weights
-RUN python3 /app/fashn-vton/scripts/download_weights.py --weights-dir /app/weights
+RUN python3 scripts/download_weights.py --weights-dir /app/weights
 
+RUN python3 -c "from fashn_vton import TryOnPipeline; print('fashn_vton OK')"
+
+WORKDIR /app
 COPY handler.py /app/handler.py
 
 CMD ["python3", "/app/handler.py"]
