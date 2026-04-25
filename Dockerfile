@@ -14,7 +14,7 @@ WORKDIR /app
 RUN git clone https://github.com/fashn-AI/fashn-vton-1.5.git /app/fashn-vton
 
 WORKDIR /app/fashn-vton
-RUN pip3 install --no-cache-dir -e .
+RUN pip3 install --no-cache-dir .
 
 RUN pip3 install --no-cache-dir runpod requests huggingface_hub
 
