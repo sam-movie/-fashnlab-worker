@@ -11,16 +11,19 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+# Install fashn_vton directly from GitHub (handles src/ layout correctly)
+RUN pip3 install --no-cache-dir "fashn-vton @ git+https://github.com/fashn-AI/fashn-vton-1.5.git"
+
+# Verify install immediately
+RUN python3 -c "from fashn_vton import TryOnPipeline; print('fashn_vton OK')"
+
+# Clone repo separately for the download_weights.py script
 RUN git clone https://github.com/fashn-AI/fashn-vton-1.5.git /app/fashn-vton
 
-WORKDIR /app/fashn-vton
-RUN pip3 install --no-cache-dir .
+RUN pip3 install --no-cache-dir runpod
 
-RUN pip3 install --no-cache-dir runpod requests huggingface_hub fashn-human-parser
-
-RUN python3 scripts/download_weights.py --weights-dir /app/weights
-
-RUN python3 -c "from fashn_vton import TryOnPipeline; print('fashn_vton OK')"
+# Download model weights
+RUN python3 /app/fashn-vton/scripts/download_weights.py --weights-dir /app/weights
 
 WORKDIR /app
 COPY handler.py /app/handler.py
