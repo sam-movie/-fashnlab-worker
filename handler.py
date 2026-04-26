@@ -2,12 +2,39 @@ import runpod
 import requests
 import base64
 import sys
+import torch
 from io import BytesIO
 from PIL import Image
 from fashn_vton import TryOnPipeline
 
+# Diagnostic: check CUDA at boot
+print(f"[BOOT] PyTorch version: {torch.__version__}", flush=True)
+print(f"[BOOT] CUDA available: {torch.cuda.is_available()}", flush=True)
+print(f"[BOOT] CUDA device count: {torch.cuda.device_count()}", flush=True)
+if torch.cuda.is_available():
+    print(f"[BOOT] CUDA device name: {torch.cuda.get_device_name(0)}", flush=True)
+    print(f"[BOOT] CUDA capability: {torch.cuda.get_device_capability(0)}", flush=True)
+
 print("[BOOT] Loading TryOnPipeline...", flush=True)
 pipeline = TryOnPipeline(weights_dir="/app/weights")
+print("[BOOT] Pipeline created", flush=True)
+
+# Force pipeline to CUDA
+if torch.cuda.is_available():
+    print("[BOOT] Moving pipeline to CUDA...", flush=True)
+    try:
+        pipeline.to("cuda")
+        print("[BOOT] Pipeline moved to CUDA", flush=True)
+    except Exception as e:
+        print(f"[BOOT] WARNING: pipeline.to('cuda') failed: {e}", flush=True)
+        # Try alternative methods
+        try:
+            if hasattr(pipeline, 'model'):
+                pipeline.model.to("cuda")
+                print("[BOOT] pipeline.model moved to CUDA", flush=True)
+        except Exception as e2:
+            print(f"[BOOT] pipeline.model.to also failed: {e2}", flush=True)
+
 print("[BOOT] Pipeline ready", flush=True)
 
 
