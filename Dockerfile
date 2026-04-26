@@ -11,16 +11,19 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Clone repo (we'll use it directly without pip install)
+# Clone repo (we use it directly without pip install)
 RUN git clone https://github.com/fashn-AI/fashn-vton-1.5.git /app/fashn-vton
 
-# DIAG: see actual repo structure
-RUN ls -la /app/fashn-vton/ && echo "---" && find /app/fashn-vton -name "*.py" -path "*/fashn_vton/*" | head -10
-
-# Install all dependencies manually (from pyproject.toml)
+# Install PyTorch with CUDA 12.1 FIRST (matches our container's CUDA)
 RUN pip3 install --no-cache-dir \
-    "torch>=2.0.0" \
-    "torchvision>=0.15.0" \
+    torch==2.4.1 torchvision==0.19.1 \
+    --index-url https://download.pytorch.org/whl/cu121
+
+# Verify CUDA-enabled torch
+RUN python3 -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA available: {torch.cuda.is_available()}'); print(f'CUDA built version: {torch.version.cuda}')"
+
+# Install other dependencies (no torch override since we already have correct one)
+RUN pip3 install --no-cache-dir \
     "safetensors>=0.3.0" \
     "huggingface_hub>=0.20.0" \
     "pillow>=9.0.0" \
@@ -37,8 +40,8 @@ RUN pip3 install --no-cache-dir \
 # Add fashn-vton source to Python path
 ENV PYTHONPATH=/app/fashn-vton/src:/app/fashn-vton:$PYTHONPATH
 
-# Verify import works
-RUN python3 -c "from fashn_vton import TryOnPipeline; print('fashn_vton OK')"
+# Verify import + CUDA still works
+RUN python3 -c "from fashn_vton import TryOnPipeline; import torch; print(f'fashn_vton OK | CUDA: {torch.cuda.is_available()}')"
 
 # Download model weights
 RUN python3 /app/fashn-vton/scripts/download_weights.py --weights-dir /app/weights
